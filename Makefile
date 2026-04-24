@@ -46,18 +46,18 @@ bindata/static/css/index.css: bindata/static/css resources/index.css
 bindata/static/css/xterm_customize.css: bindata/static/css resources/xterm_customize.css
 	cp resources/xterm_customize.css bindata/static/css/xterm_customize.css
 
-bindata/static/css/xterm.css: bindata/static/css js/node_modules/xterm/dist/xterm.css
-	cp js/node_modules/xterm/dist/xterm.css bindata/static/css/xterm.css
+bindata/static/css/xterm.css: bindata/static/css js/node_modules/@xterm/xterm/css/xterm.css
+	cp js/node_modules/@xterm/xterm/css/xterm.css bindata/static/css/xterm.css
 
-js/node_modules/xterm/dist/xterm.css:
+js/node_modules/@xterm/xterm/css/xterm.css: js/package-lock.json
 	cd js && \
 	npm install
 
-js/dist/gotty-bundle.js: js/src/* js/node_modules/webpack
+js/dist/gotty-bundle.js: js/src/* js/package-lock.json js/webpack.config.js js/tsconfig.json js/node_modules/webpack
 	cd js && \
-	`npm bin`/webpack
+	npx webpack
 
-js/node_modules/webpack:
+js/node_modules/webpack: js/package-lock.json
 	cd js && \
 	npm install
 

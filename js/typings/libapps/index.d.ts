@@ -26,7 +26,7 @@ export declare namespace hterm {
     }
 
     export class Prefs {
-        set(key: string, value: string): void;
+        set(key: string, value: unknown): void;
     }
 
     export var defaultStorage: lib.Storage;

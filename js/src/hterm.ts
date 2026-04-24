@@ -14,6 +14,9 @@ export class Hterm {
 
     constructor(elem: HTMLElement) {
         this.elem = elem;
+        this.columns = 0;
+        this.rows = 0;
+        this.message = "";
         bare.hterm.defaultStorage = new bare.lib.Storage.Memory();
         this.term = new bare.hterm.Terminal();
         this.term.getPrefs().set("send-encoding", "raw");
@@ -51,7 +54,7 @@ export class Hterm {
         this.term.setWindowTitle(title);
     };
 
-    setPreferences(value: object) {
+    setPreferences(value: Record<string, unknown>) {
         Object.keys(value).forEach((key) => {
             this.term.getPrefs().set(key, value[key]);
         });
