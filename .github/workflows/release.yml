@@ -1,0 +1,288 @@
+name: Release
+
+on:
+  push:
+    branches: [master]
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BINARY_NAME: gotty
+  RELEASE_VERSION: ${{ github.ref_name }}
+
+jobs:
+  linux-builds:
+    name: Linux Builds
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      matrix:
+        goos: [linux]
+        goarch:
+          - 386
+          - amd64
+          - arm64
+          - mips
+          - mips64
+          - mips64le
+          - mipsle
+          - ppc64
+          - ppc64le
+          - riscv64
+          - s390x
+
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set Up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Go Build
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build \
+            -trimpath \
+            -ldflags "-s -w -X main.Version=${RELEASE_VERSION} -X main.CommitID=${GITHUB_SHA::7}" \
+            -o dist/${BINARY_NAME}_${{ matrix.goos }}-${{ matrix.goarch }} \
+            .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/${{ env.BINARY_NAME }}_${{ matrix.goos }}-${{ matrix.goarch }}
+          if-no-files-found: error
+          retention-days: 5
+
+  bsd-builds:
+    name: BSD Builds
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      matrix:
+        goos: [darwin, freebsd, openbsd, netbsd]
+        goarch: [amd64, arm64]
+
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set Up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Go Build
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build \
+            -trimpath \
+            -ldflags "-s -w -X main.Version=${RELEASE_VERSION} -X main.CommitID=${GITHUB_SHA::7}" \
+            -o dist/${BINARY_NAME}_${{ matrix.goos }}-${{ matrix.goarch }} \
+            .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/${{ env.BINARY_NAME }}_${{ matrix.goos }}-${{ matrix.goarch }}
+          if-no-files-found: error
+          retention-days: 5
+
+  ios-build:
+    name: iOS Build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: macos-latest-xlarge
+    timeout-minutes: 10
+
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set Up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Go Build
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=1 GOOS=ios GOARCH=arm64 go build \
+            -trimpath \
+            -ldflags "-s -w -X main.Version=${RELEASE_VERSION} -X main.CommitID=${GITHUB_SHA::7}" \
+            -o dist/${BINARY_NAME}_ios-arm64 \
+            .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-ios-arm64
+          path: dist/${{ env.BINARY_NAME }}_ios-arm64
+          if-no-files-found: error
+          retention-days: 5
+
+  android-build:
+    name: Android Build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set Up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Go Build
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=0 GOOS=android GOARCH=arm64 go build \
+            -trimpath \
+            -ldflags "-s -w -X main.Version=${RELEASE_VERSION} -X main.CommitID=${GITHUB_SHA::7}" \
+            -o dist/${BINARY_NAME}_android-arm64 \
+            .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-android-arm64
+          path: dist/${{ env.BINARY_NAME }}_android-arm64
+          if-no-files-found: error
+          retention-days: 5
+
+  other-builds:
+    name: Other Builds
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      matrix:
+        goos: [dragonfly, plan9, solaris]
+        goarch: [amd64]
+
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set Up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Go Build
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build \
+            -trimpath \
+            -ldflags "-s -w -X main.Version=${RELEASE_VERSION} -X main.CommitID=${GITHUB_SHA::7}" \
+            -o dist/${BINARY_NAME}_${{ matrix.goos }}-${{ matrix.goarch }} \
+            .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/${{ env.BINARY_NAME }}_${{ matrix.goos }}-${{ matrix.goarch }}
+          if-no-files-found: error
+          retention-days: 5
+
+  windows-builds:
+    name: Windows Builds
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      matrix:
+        goos: [windows]
+        goarch: [386, amd64, arm64]
+
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set Up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Go Build
+        run: |
+          mkdir -p dist
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build \
+            -trimpath \
+            -ldflags "-s -w -X main.Version=${RELEASE_VERSION} -X main.CommitID=${GITHUB_SHA::7}" \
+            -o dist/${BINARY_NAME}_${{ matrix.goos }}-${{ matrix.goarch }}.exe \
+            .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/${{ env.BINARY_NAME }}_${{ matrix.goos }}-${{ matrix.goarch }}.exe
+          if-no-files-found: error
+          retention-days: 5
+
+  tagged-release:
+    name: Tagged Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - linux-builds
+      - bsd-builds
+      - ios-build
+      - android-build
+      - other-builds
+      - windows-builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Collect Artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: release
+          pattern: build-*
+          merge-multiple: true
+
+      - name: Publish Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${RELEASE_VERSION}" >/dev/null 2>&1; then
+            gh release upload "${RELEASE_VERSION}" release/* --clobber
+          else
+            gh release create "${RELEASE_VERSION}" release/* \
+              --title "${RELEASE_VERSION}" \
+              --verify-tag
+          fi

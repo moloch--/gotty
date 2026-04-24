@@ -1,13 +1,13 @@
 package localcommand
 
 import (
-	"syscall"
+	"os"
 	"time"
 )
 
 type Option func(*LocalCommand)
 
-func WithCloseSignal(signal syscall.Signal) Option {
+func WithCloseSignal(signal os.Signal) Option {
 	return func(lcmd *LocalCommand) {
 		lcmd.closeSignal = signal
 	}

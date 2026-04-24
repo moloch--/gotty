@@ -1,7 +1,6 @@
 package localcommand
 
 import (
-	"syscall"
 	"time"
 
 	"github.com/yudai/gotty/server"
@@ -20,7 +19,7 @@ type Factory struct {
 }
 
 func NewFactory(command string, argv []string, options *Options) (*Factory, error) {
-	opts := []Option{WithCloseSignal(syscall.Signal(options.CloseSignal))}
+	opts := []Option{WithCloseSignal(closeSignalFromInt(options.CloseSignal))}
 	if options.CloseTimeout >= 0 {
 		opts = append(opts, WithCloseTimeout(time.Duration(options.CloseTimeout)*time.Second))
 	}
