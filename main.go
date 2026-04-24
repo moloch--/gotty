@@ -50,12 +50,6 @@ func main() {
 	)
 
 	app.Action = func(c *cli.Context) {
-		if len(c.Args()) == 0 {
-			msg := "Error: No command given."
-			cli.ShowAppHelp(c)
-			exit(fmt.Errorf(msg), 1)
-		}
-
 		configFile := c.String("config")
 		_, err := os.Stat(homedir.Expand(configFile))
 		if configFile != "~/.gotty" || !os.IsNotExist(err) {
@@ -74,7 +68,11 @@ func main() {
 			exit(err, 6)
 		}
 
-		args := c.Args()
+		args, usingDefaultCommand := effectiveCommandArgs([]string(c.Args()))
+		if usingDefaultCommand {
+			appOptions.PermitWrite = true
+		}
+
 		factory, err := localcommand.NewFactory(args[0], args[1:], backendOptions)
 		if err != nil {
 			exit(err, 3)

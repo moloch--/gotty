@@ -4,7 +4,7 @@ VERSION = 2.0.0-alpha.3
 BUILD_OPTIONS = -ldflags "-X main.Version=$(VERSION) -X main.CommitID=$(GIT_COMMIT)"
 
 gotty: main.go server/*.go webtty/*.go backend/*.go Makefile
-	godep go build ${BUILD_OPTIONS}
+	go build ${BUILD_OPTIONS}
 
 .PHONY: asset
 asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/static/favicon.png bindata/static/css/index.css bindata/static/css/xterm.css bindata/static/css/xterm_customize.css
@@ -13,6 +13,10 @@ asset: bindata/static/js/gotty-bundle.js bindata/static/index.html bindata/stati
 
 .PHONY: all
 all: asset gotty
+
+.PHONY: clean
+clean:
+	rm -rf gotty bindata ./builds
 
 bindata:
 	mkdir bindata
@@ -58,13 +62,13 @@ js/node_modules/webpack:
 	npm install
 
 tools:
-	go get github.com/tools/godep
-	go get github.com/mitchellh/gox
-	go get github.com/tcnksm/ghr
-	go get github.com/jteeuwen/go-bindata/...
+	go install github.com/go-bindata/go-bindata/go-bindata@latest
+	go install github.com/mitchellh/gox@latest
+	go install github.com/tcnksm/ghr@latest
 
 test:
-	if [ `go fmt $(go list ./... | grep -v /vendor/) | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
+	if [ `gofmt -l $$(find . -name '*.go' -not -path './vendor/*') | wc -l` -gt 0 ]; then echo "go fmt error"; exit 1; fi
+	go test ./...
 
 cross_compile:
 	GOARM=5 gox -os="darwin linux freebsd netbsd openbsd" -arch="386 amd64 arm" -osarch="!darwin/arm" -output "${OUTPUT_DIR}/pkg/{{.OS}}_{{.Arch}}/{{.Dir}}"

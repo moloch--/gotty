@@ -4,7 +4,7 @@ var helpTemplate = `NAME:
    {{.Name}} - {{.Usage}}
 
 USAGE:
-   {{.Name}} [options] <command> [<arguments...>]
+   {{.Name}} [options] [<command> [<arguments...>]]
 
 VERSION:
    {{.Version}}{{if or .Author .Email}}

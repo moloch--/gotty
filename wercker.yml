@@ -1,8 +1,7 @@
-box: golang:1.9.0
+box: golang:1.26
 
 build:
   steps:
-    - setup-go-workspace
     - script:
         name: tools
         code: make tools

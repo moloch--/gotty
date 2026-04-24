@@ -26,21 +26,21 @@ You can install GoTTY with [Homebrew](http://brew.sh/) as well.
 $ brew install yudai/gotty/gotty
 ```
 
-## `go get` Installation (Development)
+## `go install` Installation (Development)
 
-If you have a Go language environment, you can install GoTTY with the `go get` command. However, this command builds a binary file from the latest master branch, which can include unstable or breaking changes. GoTTY requires go1.9 or later.
+If you have a Go language environment, you can install GoTTY with the `go install` command. However, this command builds a binary file from the latest master branch, which can include unstable or breaking changes. GoTTY requires Go 1.26 or later.
 
 ```sh
-$ go get github.com/yudai/gotty
+$ go install github.com/yudai/gotty@latest
 ```
 
 # Usage
 
 ```
-Usage: gotty [options] <command> [<arguments...>]
+Usage: gotty [options] [<command> [<arguments...>]]
 ```
 
-Run `gotty` with your preferred command as its arguments (e.g. `gotty top`).
+Run `gotty` with your preferred command as its arguments (e.g. `gotty top`). When no command is provided, GoTTY starts your default shell and automatically permits browser input for that shell session. On Unix-like systems it uses the default user shell, then falls back to `/bin/bash` or `/bin/sh`; on Windows it uses PowerShell and falls back to `cmd.exe`.
 
 By default, GoTTY starts a web server at port 8080. Open the URL on your web browser and you can see the running command as if it were running on your terminal.
 
@@ -151,12 +151,11 @@ $ gotty -w docker run -it --rm busybox
 
 ## Development
 
-You can build a binary using the following commands. Windows is not supported now. go1.9 is required.
+You can build a binary using the following commands. Windows is not supported now. Go 1.26 is required.
 
 ```sh
 # Install tools
-go get github.com/jteeuwen/go-bindata/...
-go get github.com/tools/godep
+make tools
 
 # Build
 make
